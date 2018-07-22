@@ -5,7 +5,7 @@ import daylightSavings
 import asyncio
 from time import localtime, timezone
 
-version = 2.1
+version = 2.3
 
 bot_prefixes = '!', '?'
 
@@ -18,12 +18,12 @@ async def dndscheduler():
     await client.wait_until_ready()
     channel = discord.Object(id=dndc)
     while not client.is_closed:
-        hr = 18
+        hr = 20  #IN JULY (Usually 18, which equals 2PM EST (in July))
         dasave = daylightSavings.daySave()
         if dasave == True:
-            hr = 18
+            hr = hr
         elif dasave == False:
-            hr = 17
+            hr = hr - 1
         if localtime().tm_wday == 6 and localtime().tm_hour == hr and localtime().tm_min == 0:
             await client.send_message(channel, '<@&428010612514226214>' + " HOLD ON TO YOUR BUTTS! IT'S D&D TIME" + '/n' + '<@216455910703366144>' + " Don't forget to sneak attack ya fool!")
         await asyncio.sleep(60)  # task runs every 60 seconds
@@ -39,8 +39,8 @@ async def roll(dice):
 
 
 @client.command(name='changeplay',
-                 description='Changes the game that the bot is playing',
-                 brief='Change the Game')
+                description='Changes the game that the bot is playing',
+                brief='Change the Game')
 async def changeplay(game):
     await client.change_presence(game=discord.Game(name=game))
     await client.say("Success! I'm now playing " + game)
@@ -84,4 +84,4 @@ async def on_ready():
     await client.change_presence(game=discord.Game(name='Version ' + str(version)))
 
 client.loop.create_task(dndscheduler())
-client.run('TOKEN')
+client.run('Token')

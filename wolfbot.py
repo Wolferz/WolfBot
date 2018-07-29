@@ -4,8 +4,11 @@ import diceRollerV2
 import daylightSavings
 import asyncio
 from time import localtime, timezone
+from discord.voice_client import VoiceClient
 
-version = 2.3
+version = '3.1'
+
+startup_extensions = ["Music"]
 
 bot_prefixes = '!', '?'
 
@@ -13,19 +16,22 @@ client = Bot(bot_prefixes)
 
 dndc = '428010154743693312'  # D&D Text Channel ID
 
+class Main_Commands():
+    def __init__(self,client):
+        self.bot = client
 
 async def dndscheduler():
     await client.wait_until_ready()
     channel = discord.Object(id=dndc)
     while not client.is_closed:
-        hr = 20  #IN JULY (Usually 18, which equals 2PM EST (in July))
+        hr = 18  #IN JULY (Usually 18, which equals 2PM EST (in July))
         dasave = daylightSavings.daySave()
         if dasave == True:
             hr = hr
         elif dasave == False:
             hr = hr - 1
         if localtime().tm_wday == 6 and localtime().tm_hour == hr and localtime().tm_min == 0:
-            await client.send_message(channel, '<@&428010612514226214>' + " HOLD ON TO YOUR BUTTS! IT'S D&D TIME" + '/n' + '<@216455910703366144>' + " Don't forget to sneak attack ya fool!")
+            await client.send_message(channel, '<@&428010612514226214>' + " HOLD ON TO YOUR BUTTS! IT'S D&D TIME" + '\n' + '<@216455910703366144>' + " Don't forget to sneak attack and use lucky ya fool!")
         await asyncio.sleep(60)  # task runs every 60 seconds
 
 
@@ -71,8 +77,25 @@ async def time():
 
 
 @client.command(pass_context=True)
-async def stop(context):
+async def shutdown(context):
     await client.say('Sorry ' + context.message.author.mention + ", I can't let you do that.")
+
+
+@client.command(name='msgdnd',
+                brief='msg dnd',
+                pass_context=True)
+async def msgdnd(message,context):
+    channel = discord.Object(id=dndc)
+    await client.say('Sending: ' + message + 'to the dnd channel')
+    await client.send_message(channel, message)
+
+if __name__ == '__main__':
+    for extension in startup_extensions:
+        try:
+            client.load_extension(extension)
+        except Exception as e:
+            exc = '{}: {}'.format(type(e).__name__, e)
+            print('Failed to load extension {}\n{}'.format(extension, exc))
 
 
 @client.event
@@ -81,7 +104,7 @@ async def on_ready():
     print(client.user.name)
     print(client.user.id)
     print('------')
-    await client.change_presence(game=discord.Game(name='Version ' + str(version)))
+    await client.change_presence(game=discord.Game(name='Version ' + str(version), url='about:blank', type=1))
 
 client.loop.create_task(dndscheduler())
 client.run('Token')

@@ -1,12 +1,12 @@
 import discord
 from discord.ext.commands import Bot
-import diceRollerV2
+import diceRoller
 import daylightSavings
 import asyncio
 from time import localtime, timezone
 from discord.voice_client import VoiceClient
 
-version = '3.2'
+version = '4 Beta'
 
 startup_extensions = ["Music"]
 
@@ -28,22 +28,32 @@ async def dndscheduler():
     while not client.is_closed:
         hr = 18  # IN JULY (Usually 18, which equals 2PM EST (in July))
         dasave = daylightSavings.daySave()
-        if dasave == True:
+        if dasave:
             hr = hr
-        elif dasave == False:
+        elif not dasave:
             hr = hr - 1
-        if localtime().tm_wday == 6 and localtime().tm_hour == hr and localtime().tm_min == 0 and client.get_server() == 97414927530090496:
+        if localtime().tm_wday == 6 and localtime().tm_hour == hr and localtime().tm_min == 0:
             await client.send_message(channel, '<@&428010612514226214>' + " HOLD ON TO YOUR BUTTS! IT'S D&D TIME" + '\n' + '<@216455910703366144>' + " Don't forget to sneak attack and use lucky ya fool!")
         await asyncio.sleep(60)  # task runs every 60 seconds
 
 
 @client.command(name='roll',
-                description='Use 4d6+2 format to roll the dice',
+                description='Use 4d6+2 format to roll the dice. Can add and subtract independently',
                 brief='Rolls Dice',
                 aliases=['rolldice', 'rolls'])
 async def roll(dice):
-    rolly = diceRollerV2.diceroller(dice)
+    rolly = diceRoller.diceroller(dice)
     await client.say(rolly)
+
+
+@client.command(name='spam',
+                description='Spams a message that follow the command',
+                brief='Spams a Message')
+async def spam(msg):
+    iti = 1
+    while iti != 6:
+        await client.say(msg)
+        iti = iti + 1
 
 
 @client.command(name='changeplay',
@@ -60,6 +70,19 @@ async def changeplay(game):
 async def cdndr(rle):
     print(rle)
     await client.say('`' + rle + '`')
+
+
+@client.command(name='movechan',
+                pass_context=True,
+                no_pm=True)  # FIXME movechan does not work
+async def movechan(newchan,context):
+    chan = context.message.author.voice_channel
+    print(str(chan))
+    members = chan.voice_members
+    users = []
+    for member in members:
+        users.append(member.id)
+    print(str(users))
 
 
 @client.command(name='rc',
@@ -117,9 +140,9 @@ async def shutdown(context):
 
 
 @client.command(name='msgdnd',
-                brief='msg dnd',
-                pass_context=True)
-async def msgdnd(message,context):
+                brief='message the dnd as wolfbot',
+                pass_context=False)
+async def msgdnd(message):
     channel = discord.Object(id=dndc)
     await client.say('Sending: ' + message + 'to the dnd channel')
     await client.send_message(channel, message)
@@ -132,11 +155,19 @@ if __name__ == '__main__':
             exc = '{}: {}'.format(type(e).__name__, e)
             print('Failed to load extension {}\n{}'.format(extension, exc))
 
-@client.event
-async def on_command_error(error, ctx):
+
+@client.event  # TODO Change error handling
+async def on_command_error(error,  *args, **kwargs):
+    #message = args[0]
+    #print('error: ' + str(error))
+    #print('args: ' + str(args))
+    #print('message: ' + str(message))
+    #print('kwargs: ' + str(kwargs))
+    #await client.send_message(message.channel, 'ERROR' + '\n' + str(error))
     user = discord.utils.get(client.get_all_members(), id='257380719729311745')
     if user is not None:
         await client.send_message(user, 'ERROR' + '\n' + str(error))
+
 
 @client.event
 async def on_ready():
@@ -147,4 +178,4 @@ async def on_ready():
     await client.change_presence(game=discord.Game(name='Version ' + str(version)))
 
 client.loop.create_task(dndscheduler())
-client.run('')
+client.run('TOKEN')

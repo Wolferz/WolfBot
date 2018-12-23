@@ -1,5 +1,5 @@
 def diceroller(selection):
-    version = '3 Beta'
+    version = '3'
 
     # print(selection)
 
@@ -33,6 +33,14 @@ def diceroller(selection):
             op = '-'
             a, b = selection.split('-')
             total = int(a) - int(b)
+        elif '*' in selection:
+            op = '*'
+            a, b = selection.split('*')
+            total = int(a) * int(b)
+        elif '/' in selection:
+            op = '/'
+            a, b = selection.split('/')
+            total = int(a) / int(b)
         else:
             msg = 'Error\nUnknown Operator'
             return msg

@@ -49,58 +49,38 @@ class DnD:
         elif character.lower() in playlist:
             chardir = openpyxl.load_workbook('dnd sheets.xlsx')
             charsheet = chardir[character.lower()]
-            if ability.lower() == 'strength':
-                modifier = int(charsheet['B2'].value)
-            elif ability.lower() == 'dexterity':
-                modifier = int(charsheet['B3'].value)
-            elif ability.lower() == 'constitution':
-                modifier = int(charsheet['B4'].value)
-            elif ability.lower() == 'intelligence':
-                modifier = int(charsheet['B5'].value)
-            elif ability.lower() == 'wisdom':
-                modifier = int(charsheet['B6'].value)
-            elif ability.lower() == 'charisma':
-                modifier = int(charsheet['B7'].value)
-            elif ability.lower() == 'acrobatics':
-                modifier = int(charsheet['B8'].value)
-            elif ability.lower() == 'animal handling' or ability.lower() == 'animalhandling':
-                modifier = int(charsheet['B9'].value)
-            elif ability.lower() == 'arcana':
-                modifier = int(charsheet['B10'].value)
-            elif ability.lower() == 'athletics':
-                modifier = int(charsheet['B11'].value)
-            elif ability.lower() == 'deception':
-                modifier = int(charsheet['B12'].value)
-            elif ability.lower() == 'history':
-                modifier = int(charsheet['B13'].value)
-            elif ability.lower() == 'insight':
-                modifier = int(charsheet['B14'].value)
-            elif ability.lower() == 'intimidation':
-                modifier = int(charsheet['B15'].value)
-            elif ability.lower() == 'investigation':
-                modifier = int(charsheet['B16'].value)
-            elif ability.lower() == 'medicine':
-                modifier = int(charsheet['B17'].value)
-            elif ability.lower() == 'nature':
-                modifier = int(charsheet['B18'].value)
-            elif ability.lower() == 'perception':
-                modifier = int(charsheet['B19'].value)
-            elif ability.lower() == 'performance':
-                modifier = int(charsheet['B20'].value)
-            elif ability.lower() == 'persuasion':
-                modifier = int(charsheet['B21'].value)
-            elif ability.lower() == 'religion':
-                modifier = int(charsheet['B22'].value)
-            elif ability.lower() == 'slight of hand' or ability.lower() == 'slightofhand':
-                modifier = int(charsheet['B23'].value)
-            elif ability.lower() == 'stealth':
-                modifier = int(charsheet['B24'].value)
-            elif ability.lower() == 'survival':
-                modifier = int(charsheet['B25'].value)
-            else:
-                await self.client.say('Unknown Skill')
-                modifier = 'No'
-            if modifier != 'No':
+            ability = ability.lower()
+            abilities = {
+                'strength': 'B2',
+                'dexterity': 'B3',
+                'constitution': 'B4',
+                'intelligence': 'B5',
+                'wisdom': 'B6',
+                'charisma': 'B7',
+                'acrobatics': 'B8',
+                'animal handling': 'B9',
+                'animalhandling': 'B9',
+                'arcana': 'B10',
+                'athletics': 'B11',
+                'deception': 'B12',
+                'history': 'B13',
+                'insight': 'B14',
+                'intimidation': 'B15',
+                'investigation': 'B16',
+                'medicine': 'B17',
+                'nature': 'B18',
+                'perception': 'B19',
+                'performance': 'B20',
+                'persuasion': 'B21',
+                'religion': 'B22',
+                'slight of hand': 'B23',
+                'slightofhand': 'B23',
+                'stealth': 'B24',
+                'survival': 'B25',
+            }
+            cell = abilities.get(ability)
+            if cell is not None:
+                modifier = int(charsheet[cell].value)
                 roll = random.randint(1, 20)
                 result = roll + int(modifier)
                 if modifier >= 0:
@@ -114,6 +94,8 @@ class DnD:
                     extra = ' **Critical Failure**'
                 await self.client.say('Rolling 1d20' + '\n' + '[' + str(roll) + ']' + modsy + '\n' + 'Total: ' +
                                       str(result) + '\n' + extra)
+            else:
+                await self.client.say('Unknown Skill')
         else:
             await self.client.say(character.capitalize() +
                                   ' is most likely not in the campaign. Please use first names only.')

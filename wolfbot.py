@@ -1,11 +1,9 @@
 import discord
 from discord.ext.commands import Bot
-import daylightSavings
 import asyncio
-from time import localtime, timezone
-from discord.voice_client import VoiceClient
+from time import localtime
 
-version = '8 Beta'
+version = '2.8 Beta'
 
 startup_extensions = ["Music", 'dnd', 'utilities']
 bot_prefixes = '!'
@@ -24,7 +22,7 @@ async def dndscheduler():
     await client.wait_until_ready()
     channel = discord.Object(id=dndc)
     while not client.is_closed:
-        hr = 17  # IN JULY (Usually 18, which equals 2PM EST (in July))
+        hr = 15  # IN JULY (Usually 18, which equals 2PM EST (in July))
         '''
         dasave = daylightSavings.daySave()
         if dasave:

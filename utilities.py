@@ -87,41 +87,31 @@ class Utilities:
                       brief='Opt in or out for mention notifications',
                       pass_context=True)
     async def opt(self, ctx, inorout, entered_role):
-        await self.client.say('Opt, ' + inorout + ', ' + entered_role + '\n' + ctx.message.author.mention)
-        rolenames = ['overwatch', 'ark', 'wow']
-        if entered_role.lower() in rolenames:
-            lowrole = entered_role.lower()
-            role = discord.utils.get(ctx.message.server.roles, name=lowrole)
-            roleids = [
-                '526447124821573642',  # Overwatch
-                '526447129477120007',  # Ark
-                '526447131641380885',  # Wow
-                ]
-            if role in roleids:
-                if inorout.lower() == 'in':
-                    for r in ctx.message.author.roles:
-                        if role in r.id:
-                            await self.client.say('You already have this role.')
-                        else:
-                            try:
-                                await self.client.add_roles(ctx.message.author, role)
-                            except discord.Forbidden:
-                                await self.client.say('Error:' + '\n' + 'I do not have permission to do that.')
-                elif inorout.lower() == 'out':
-                    for r in ctx.message.author.roles:
-                        if role in r.id:
-                            try:
-                                self.client.remove_roles(ctx.message.author, role)
-                            except discord.Forbidden:
-                                await self.client.say('Error:' + '\n' + 'I do not have permission to do that.')
-                        else:
-                            self.client.say('You do not have this role.')
-                else:
-                    await self.client.say('You need to specify if you want to opt In or Out of the role.')
-            else:
-                await self.client.say('ERROR:' + '\n' + 'Unknown role id')
+        team_list = ["Overwatch", "Ark", "WoW"]
+        entered_team = entered_role.lower()
+        role = discord.utils.get(ctx.message.server.roles, name=entered_team)
+        #roles = [
+        #    # IDs of the roles for the teams
+        #    '526447124821573642',  # Overwatch
+        #    '526447129477120007',  # Ark
+        #   '526447131641380885',  # Wow
+        #]
+        print(role.name)
+        if role is None or role.name not in team_list:
+            # If the role wasn't found by discord.utils.get() or is a role that we don't want to add:
+            await self.client.say('Unknown role, possible roles are Overwatch, Ark, and WoW')
+            return
+        elif role in ctx.message.author.roles:
+            # If they already have the role
+            await self.client.say("You already have this role.")
         else:
-            await self.client.say('I do not know what that role is. I know these roles: ' + rolenames.capitalize() + '.')
+            try:
+                await self.client.add_roles(ctx.message.author, role)
+                await self.client.send_message(ctx.message.channel, "Successfully added role {0}".format(role.name))
+            except discord.Forbidden:
+                await self.client.send_message(ctx.message.channel, "I don't have perms to add roles.")
+
+
 
     @commands.command(name='announce',
                       brief='Mods Only',

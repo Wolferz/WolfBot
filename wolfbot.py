@@ -3,7 +3,7 @@ from discord.ext.commands import Bot
 import asyncio
 from time import localtime
 
-version = '2.8 Beta'
+version = '2.9'
 
 startup_extensions = ["Music", 'dnd', 'utilities']
 bot_prefixes = '!'
@@ -22,7 +22,7 @@ async def dndscheduler():
     await client.wait_until_ready()
     channel = discord.Object(id=dndc)
     while not client.is_closed:
-        hr = 15  # IN JULY (Usually 18, which equals 2PM EST (in July))
+        hr = 13  # IN JULY (Usually 18, which equals 2PM EST (in July))
         '''
         dasave = daylightSavings.daySave()
         if dasave:
@@ -90,6 +90,29 @@ async def reload(ctx, extension):
             except Exception as error:
                 await client.say('{} cannot be loaded. [{}]'.format(extension, error))
 
+
+@client.command(name='sdu',
+                brief='Mods Only',
+                no_pm=True,
+                pass_context=True)
+async def sdu(ctx, password):
+    await client.delete_message(ctx.message)
+    if 'moderator' in [y.name.lower() for y in ctx.message.author.roles]:
+        if password == 'wbsd':
+            message = await client.say('Shutting Down')
+            asyncio.sleep(5)
+            await client.delete_message(message)
+            await client.logout()
+            asyncio.sleep(3)
+            raise SystemExit('Shutdown Via Command')
+        else:
+            message = await client.say('Incorrect Password')
+            asyncio.sleep(5)
+            await client.delete_message(message)
+    if 'moderator' not in [y.name.lower() for y in ctx.message.author.roles]:
+        message = await client.say("You do not have permission to use this command")
+        asyncio.sleep(3)
+        await client.delete_message(message)
 
 if __name__ == '__main__':
     for extension in startup_extensions:

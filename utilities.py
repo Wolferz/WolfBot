@@ -22,7 +22,11 @@ class Utilities:
 
     @commands.command()
     async def ping(self):
-        await self.client.say(':ping_pong: Pong!')
+        game = random.randint(1, 20)
+        if game == 20:
+            await self.client.say('Pon...' + '\n' + 'Welp, you win! Rematch?')
+        else:
+            await self.client.say(':ping_pong: Pong!')
 
     @commands.command(name='changeplay',
                       description='Changes the game that the bot is playing',
@@ -111,8 +115,6 @@ class Utilities:
             except discord.Forbidden:
                 await self.client.send_message(ctx.message.channel, "I don't have perms to add roles.")
 
-
-
     @commands.command(name='announce',
                       brief='Mods Only',
                       no_pm=True,
@@ -143,6 +145,7 @@ class Utilities:
     @commands.command(pass_context=True)
     async def shutdown(self, context):
         await self.client.say('Sorry ' + context.message.author.mention + ", I can't let you do that.")
+
 
     @commands.command()
     async def makemeasandwich(self):

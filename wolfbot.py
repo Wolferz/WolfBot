@@ -4,7 +4,7 @@ import asyncio
 import config
 from time import localtime
 
-version = '2.10 Beta'
+version = '2.10'
 
 startup_extensions = ["Music", 'dnd', 'utilities']
 bot_prefixes = '!'

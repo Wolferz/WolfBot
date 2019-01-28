@@ -1,5 +1,6 @@
 import asyncio
 import discord
+import config
 from discord.ext import commands
 if not discord.opus.is_loaded():
     # the 'opus' library here is opus.dll on windows
@@ -146,12 +147,17 @@ class Music:
                 return
 
         try:
-            player = await state.voice.create_ytdl_player(song, ytdl_options=opts, after=state.toggle_next)
+            beforeArgs = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+            player = await state.voice.create_ytdl_player(song, ytdl_options=opts, after=state.toggle_next,
+                                                          before_options=beforeArgs)
         except Exception as e:
             fmt = 'An error occurred while processing this request: ```py\n{}: {}\n```'
             await self.bot.send_message(ctx.message.channel, fmt.format(type(e).__name__, e))
         else:
-            player.volume = 0.6
+            try:
+                player.volume = config.defaultmusicvolume
+            except AttributeError:
+                player.volume = 0.4
             entry = VoiceEntry(ctx.message, player)
             await self.bot.say('Enqueued ' + str(entry))
             await state.songs.put(entry)
@@ -165,6 +171,7 @@ class Music:
             player = state.player
             player.volume = value / 100
             await self.bot.say('Set the volume to {:.0%}'.format(player.volume))
+
     @commands.command(pass_context=True, no_pm=True)
     async def resume(self, ctx):
         """Resumes the currently played song."""
@@ -175,9 +182,9 @@ class Music:
 
     @commands.command(pass_context=True, no_pm=True)
     async def pause(self, ctx):
-        """Resumes the currently played song."""
+        """Pauses the currently played song."""
         state = self.get_voice_state(ctx.message.server)
-        if not state.is_playing():
+        if state.is_playing():
             player = state.player
             player.pause()
 

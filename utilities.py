@@ -22,11 +22,7 @@ class Utilities:
 
     @commands.command()
     async def ping(self):
-        game = random.randint(1, 20)
-        if game == 20:
-            await self.client.say('Pon...' + '\n' + 'Welp, you win! Rematch?')
-        else:
-            await self.client.say(':ping_pong: Pong!')
+        await self.client.say(':ping_pong: Pong!')
 
     @commands.command(name='changeplay',
                       description='Changes the game that the bot is playing',
@@ -145,7 +141,6 @@ class Utilities:
     @commands.command(pass_context=True)
     async def shutdown(self, context):
         await self.client.say('Sorry ' + context.message.author.mention + ", I can't let you do that.")
-
 
     @commands.command()
     async def makemeasandwich(self):

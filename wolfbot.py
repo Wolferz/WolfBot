@@ -1,9 +1,10 @@
 import discord
 from discord.ext.commands import Bot
 import asyncio
+import config
 from time import localtime
 
-version = '2.9'
+version = '2.10 Beta'
 
 startup_extensions = ["Music", 'dnd', 'utilities']
 bot_prefixes = '!'
@@ -13,16 +14,11 @@ client = Bot(bot_prefixes)
 dndc = '428010154743693312'  # D&D Text Channel ID
 
 
-class Main_Commands():
-    def __init__(self, client):
-        self.bot = client
-
-
 async def dndscheduler():
     await client.wait_until_ready()
     channel = discord.Object(id=dndc)
     while not client.is_closed:
-        hr = 13  # IN JULY (Usually 18, which equals 2PM EST (in July))
+        hr = 15  # IN JULY (Usually 18, which equals 2PM EST (in July))
         '''
         dasave = daylightSavings.daySave()
         if dasave:
@@ -33,6 +29,11 @@ async def dndscheduler():
         if localtime().tm_wday == 6 and localtime().tm_hour == hr and localtime().tm_min == 0:
             await client.send_message(channel, '<@&428010612514226214>' + " HOLD ON TO YOUR BUTTS! IT'S D&D TIME" + '\n' + '<@216455910703366144>' + " Don't forget to sneak attack and use lucky ya fool!")
         await asyncio.sleep(60)  # task runs every 60 seconds
+
+
+class BotControls():
+    def __init__(self, client):
+        self.bot = client
 
 
 @client.command(pass_context=True)
@@ -100,19 +101,20 @@ async def sdu(ctx, password):
     if 'moderator' in [y.name.lower() for y in ctx.message.author.roles]:
         if password == 'wbsd':
             message = await client.say('Shutting Down')
-            asyncio.sleep(5)
+            await asyncio.sleep(3)
             await client.delete_message(message)
             await client.logout()
-            asyncio.sleep(3)
+            await asyncio.sleep(2)
             raise SystemExit('Shutdown Via Command')
         else:
             message = await client.say('Incorrect Password')
-            asyncio.sleep(5)
+            await asyncio.sleep(3)
             await client.delete_message(message)
     if 'moderator' not in [y.name.lower() for y in ctx.message.author.roles]:
         message = await client.say("You do not have permission to use this command")
-        asyncio.sleep(3)
+        await asyncio.sleep(3)
         await client.delete_message(message)
+
 
 if __name__ == '__main__':
     for extension in startup_extensions:
@@ -142,4 +144,4 @@ async def on_ready():
 
 
 client.loop.create_task(dndscheduler())
-client.run('')
+client.run(config.token)

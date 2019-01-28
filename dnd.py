@@ -3,6 +3,7 @@ import openpyxl
 import random
 import diceRoller
 from discord.ext import commands
+from time import localtime
 
 
 class DnD:
@@ -25,29 +26,32 @@ class DnD:
         await self.client.say('Sending: ' + message + 'to the dnd channel')
         await self.client.send_message(channel, message)
 
+    @commands.command(name='raisehand',
+                      brief='Get attention from the dm',
+                      pass_context=True)
+    async def raisehand(self, ctx):
+        dayofweek = localtime().tm_wday
+        if dayofweek == 6:  # Sunday Session
+            await self.client.start_private_message(discord.User(id='97413850386669568'))
+            await self.client.send_message(discord.User(id='97413850386669568'), ctx.message.author.mention +
+                                           ' Wants Your Attention')
+        elif dayofweek == 4:  # Friday Session
+            await self.client.start_private_message(discord.User(id='188981744714776577'))
+            await self.client.send_message(discord.User(id='188981744714776577'), ctx.message.author.mention +
+                                           ' Wants Your Attention')
+        else:
+            await self.client.say('There is no session today.')
+
     @commands.command(name='aroll')
     async def aroll(self, character, *, ability):
-        playlist = ['jura',
-                    'oysoy',
-                    'naias',
-                    'dei',
-                    'astrael',
-                    'kitiara',
-                    'gil',
-                    'aderyn',
-                    'mira',
-                    'shadow',
-                    'acacius',
-                    'israh',
-                    'raenari',
-                    'sud']
+        chardir = openpyxl.load_workbook('dnd sheets.xlsx')
+        characters = chardir.sheetnames
         blacklist = ['naias',
                      'mira',
                      'gil']
         if character.lower() in blacklist:
             await self.client.say(character.capitalize() + ' is not a supported character for this function')
-        elif character.lower() in playlist:
-            chardir = openpyxl.load_workbook('dnd sheets.xlsx')
+        elif character.lower() in characters:
             charsheet = chardir[character.lower()]
             ability = ability.lower()
             abilities = {
@@ -104,21 +108,9 @@ class DnD:
                       brief='Displays Character  Sheets',
                       description='Shows the specified character sheet, for The Price of Infinity campaign')
     async def char(self, character):
-        playlist = ['jura',
-                    'oysoy',
-                    'naias',
-                    'dei',
-                    'astrael',
-                    'kitiara',
-                    'gil',
-                    'aderyn',
-                    'mira',
-                    'shadow',
-                    'acacius',
-                    'raenari',
-                    'sud']
-        if character.lower() in playlist:
-            chardir = openpyxl.load_workbook('dnd sheets.xlsx')
+        chardir = openpyxl.load_workbook('dnd sheets.xlsx')
+        characters = chardir.sheetnames
+        if character.lower() in characters:
             charsheet = chardir[character.lower()]
             name = str(charsheet['A1'].value)
             desc = str(charsheet['B1'].value + ' : ' + charsheet['C1'].value + '\n' + charsheet['D1'].value)

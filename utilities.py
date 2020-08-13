@@ -7,85 +7,98 @@ from time import localtime, timezone
 modrole = 348838039302307840
 
 
-class Utilities:
+class Utilities(commands.Cog):
     def __init__(self, client):
         self.client = client
 
     @commands.command(name='spam',
                       description='Spams a message that follow the command',
                       brief='Spams a Message')
-    async def spam(self, *, msg):
+    async def spam(self, ctx, *, msg):
         iti = 1
         while iti != 6:
-            await self.client.say(msg)
+            await ctx.send(msg)
             iti = iti + 1
 
+    @commands.command(name='prunetest',
+                      description='Shows how many members will be removed if server is pruned for a number of days')
+    async def prunetest(self, ctx, days):
+        try:
+            await ctx.send(await ctx.guild.estimate_pruned_members(days=int(days)))
+        except Exception as error:
+            await ctx.send('ERROR: \n{}'.format(error))
+
     @commands.command()
-    async def ping(self):
-        await self.client.say(':ping_pong: Pong!')
+    async def ping(self, ctx):
+        ping = int(self.client.latency * 100)
+        await ctx.send(':ping_pong: Pong! (In {}ms)'.format(str(ping)))
 
     @commands.command(name='changeplay',
                       description='Changes the game that the bot is playing',
                       brief='Change the Game')
-    async def changeplay(self, game):
+    async def changeplay(self, ctx, game):
         await self.client.change_presence(game=discord.Game(name=game))
-        await self.client.say("Success! I'm now playing " + game)
+        await ctx.send("Success! I'm now playing " + game)
 
     @commands.command(name='cdndr',
                       description='Utility for Finding an Id for Development, Console Required',
                       brief='follow with an @mention')
-    async def cdndr(self, rle):
+    async def cdndr(self, ctx, rle):
         print(rle)
-        await self.client.say('`' + rle + '`')
+        await ctx.send('`' + rle + '`')
 
     @commands.command(name='timer',
                       description='Start a Timer',
-                      brief='Timer',
-                      pass_context=True)
+                      brief='Timer')
     async def timer(self, ctx, Minutes, Seconds):
         sender = ctx.message.author.mention
-        await self.client.say('Timer started for ' + Minutes + ' minutes and ' + Seconds + ' seconds.')
+        await ctx.send('Timer started for ' + Minutes + ' minutes and ' + Seconds + ' seconds.')
         time = (int(Minutes) * 60) + int(Seconds)
         await asyncio.sleep(time)
-        await self.client.say('The timer set by ' + sender + ', is done')
+        await ctx.send('The timer set by ' + sender + ', is done')
+
+    @commands.command(name='dale',
+                      description='dale',
+                      brief='dale')
+    async def dale(self, ctx):
+        if ctx.message.server == 333534981831917570:
+            ctx.send('<@164876392494792705>, You a bitch')
 
     @commands.command(name='rc',
                       description='A ready Check',
                       brief='Ready Check',
                       aliases=['Readycheck', 'readycheck'])
-    async def rc(self, tot):
+    async def rc(self, ctx, tot):
         global ready
         global tim
         tot = int(tot)
         if tot <= 0:
-            await self.client.say('You need to specify how many people we are waiting on')
+            await ctx.send('You need to specify how many people we are waiting on')
         else:
-            await self.client.say('Ready Check! Waiting on ' + str(tot) + 'People!' + '\n' + "Ready Up with '!r'")
+            await ctx.send('Ready Check! Waiting on ' + str(tot) + 'People!' + '\n' + "Ready Up with '!r'")
             ready = 0
             tim = 0
             while ready < tot:
                 if tim == (15 * 3):
-                    await self.client.say("The ready check has timed out")
+                    await ctx.send("The ready check has timed out")
                     break
                 tim = tim + 3
                 await asyncio.sleep(3)
             if ready >= tot:
-                await self.client.say('Everyone is Ready!')
+                await ctx.send('Everyone is Ready!')
 
     @commands.command(name='r',
                       brief='Used in a Ready Check',
-                      aliases=['R'],
-                      pass_context=True)
-    async def r(self, context):
+                      aliases=['R'])
+    async def r(self, ctx):
         global ready
         global tim
         ready = ready + 1
         tim = 0
-        await self.client.say(context.message.author.mention + 'has readied up!')
+        await ctx.send(ctx.message.author.mention + 'has readied up!')
 
-    @commands.command(name='opt',
-                      brief='Opt in or out for mention notifications',
-                      pass_context=True)
+    @commands.command(name='opt',  # FIXME Cant poll server for roles correctly
+                      brief='Opt in or out for mention notifications')
     async def opt(self, ctx, inorout, entered_role):
         team_list = ["Overwatch", "Ark", "WoW"]
         entered_team = entered_role.lower()
@@ -99,11 +112,11 @@ class Utilities:
         print(role.name)
         if role is None or role.name not in team_list:
             # If the role wasn't found by discord.utils.get() or is a role that we don't want to add:
-            await self.client.say('Unknown role, possible roles are Overwatch, Ark, and WoW')
+            await ctx.send('Unknown role, possible roles are Overwatch, Ark, and WoW')
             return
         elif role in ctx.message.author.roles:
             # If they already have the role
-            await self.client.say("You already have this role.")
+            await ctx.send("You already have this role.")
         else:
             try:
                 await self.client.add_roles(ctx.message.author, role)
@@ -113,45 +126,43 @@ class Utilities:
 
     @commands.command(name='announce',
                       brief='Mods Only',
-                      no_pm=True,
-                      pass_context=True)
-    async def announce(self, ctx, channel: discord.Channel, *, msg):
+                      no_pm=True)
+    async def announce(self, ctx, channel: discord.TextChannel, *, msg):
         if 'moderator' in [y.name.lower() for y in ctx.message.author.roles]:
             announcement = 'Announcement:' + '\n' + msg
-            await self.client.send_message(channel, announcement)
-        elif not 'moderator' in [y.name.lower() for y in ctx.message.author.roles]:
-            self.client.say("You do not have permission to use this command")
+            await channel.send(announcement)
+        elif 'moderator' not in [y.name.lower() for y in ctx.message.author.roles]:
+            ctx.send("You do not have permission to use this command")
 
     @commands.command(name='hello',
                       description='It is good to be polite when meeting new friends',
                       brief='Make a first impression',
-                      aliases=['hi, hia, hiya'],
-                      pass_context=True)
-    async def hello(self, context):
-        await self.client.say('Hello, ' + context.message.author.mention)
+                      aliases=['hi, hia, hiya'])
+    async def hello(self, ctx):
+        await ctx.send('Hello, ' + ctx.message.author.mention)
 
     @commands.command(name='time',
                       description='Returns the time of the bot',
                       brief='Bot Time')
-    async def time(self):
-        await self.client.say(
+    async def time(self, ctx):
+        await ctx.send(
             'Time: ' + str(localtime().tm_hour) + ':' + str(localtime().tm_min) + '\n' + 'Timezone: ' + str(
                 timezone) + '\n' + 'Daylight Savings: ' + str(localtime().tm_isdst))
 
-    @commands.command(pass_context=True)
-    async def shutdown(self, context):
-        await self.client.say('Sorry ' + context.message.author.mention + ", I can't let you do that.")
+    @commands.command()
+    async def shutdown(self, ctx):
+        await ctx.send('Sorry ' + ctx.message.author.mention + ", I can't let you do that.")
 
     @commands.command()
-    async def makemeasandwich(self):
-        await self.client.say(':hamburger:')
+    async def makemeasandwich(self, ctx):
+        await ctx.send(':hamburger:')
 
     @commands.command()
-    async def filemytaxes(self):
-        await self.client.say('No, do them yourself:' + '\n' + 'https://www.irs.gov/forms-instructions')
+    async def filemytaxes(self, ctx):
+        await ctx.send('No, do them yourself:' + '\n' + 'https://www.irs.gov/forms-instructions')
 
     @commands.command()
-    async def randomcatfact(self):
+    async def randomcatfact(self, ctx):
         facts = [
             'Unlike dogs, cats do not have a sweet tooth. Scientists believe this is due to a mutation in a key taste receptor.',
             'When a cat chases its prey, it keeps its head level. Dogs and humans bob their heads up and down.',
@@ -253,12 +264,12 @@ class Utilities:
             'The richest cat is Blackie who was left £15 million by his owner, Ben Rea.',
             'The claws on the cat’s back paws aren’t as sharp as the claws on the front paws because the claws in the back don’t retract and, consequently, become worn.',
             'Cats can drink seawater.']
-        await self.client.say(random.choice(facts))
+        await ctx.send(random.choice(facts))
 
     @commands.command(name='patchnotes',
                     brief='Patch Notes',
                     alias=['patch,changes'])
-    async def patchnotes(self):
+    async def patchnotes(self, ctx):
         embed = discord.Embed(
             title="Wolfbot",
             description='Patch Notes',
@@ -272,7 +283,7 @@ class Utilities:
         embed.add_field(name='Ready check', value='Changed timeout to reset timer after someone readies', inline=False)
         embed.add_field(name='!aroll', value='Rolls a d20 with the ability modifier of a character', inline=False)
         embed.add_field(name='Note', value='!movechan does not work', inline=False)
-        await self.client.say(embed=embed)
+        await ctx.send(embed=embed)
 
 
 def setup(client):

@@ -1,127 +1,138 @@
-def diceroller(selection):
-    version = '3'
+import random
 
-    # print(selection)
 
-    import random
-
-    def reset():
-        global sides, rolls, modifier, yn, rollSuccess, msg, failures, successes
-        sides = 0  # Sides on the given die
-        rolls = 0  # Total number of rolls
-        modifier = '0'  # Modifiers to be Added after the fact
-        rollSuccess = 0
-        msg = ''
-        failures = 0
-        successes = 0
-
-    reset()
-
-    # print('Dice Roller Version ' + version)
-
-    def check():
-        try:
-            request()
-        except:
-            basic()
-
-    def basic():
-        global msg
-        if '+' in selection:
-            op = '+'
-            a, b = selection.split('+')
-            total = int(a) + int(b)
-        elif '-' in selection:
-            op = '-'
-            a, b = selection.split('-')
-            total = int(a) - int(b)
-        elif '*' in selection:
-            op = '*'
-            a, b = selection.split('*')
-            total = int(a) * int(b)
-        elif '/' in selection:
-            op = '/'
-            a, b = selection.split('/')
-            total = int(a) / int(b)
-        else:
-            msg = 'Error\nUnknown Operator'
-            return msg
-        msg = 'Calculating:' + '\n' + str(a) + op + str(b) + '=' + str(total)
-
-    def request():
-        global sides, rolls, modifier
-        rolls, a = selection.split('d')
-        try:
-            sides, modifier = a.split('+')
-        except:
+def separator(msg):  # Separates the input roll into separate variables
+    advantage = ['adv', 'advantage']
+    disadvantage = ['dis', 'dadv', 'disadv', 'disavantage']
+    count = ''
+    die = ''
+    diemod = ''
+    adv = 0
+    if any(a in msg for a in advantage):
+        adv = 1
+    elif any(d in msg for d in disadvantage):
+        adv = -1
+    if 'd' in msg:  # Is it a roll?
+        try:  # Is it a 1d20 or a d20 style (There is a good chance this does absolutely nothing)
+            count, diemod = msg.split('d')
+        except ValueError:
+            count = 1
+            diemod = msg
+        finally:
             try:
-                sides, modifier = a.split('-')
-                modifier = '-' + str(modifier)
-            except:
-                sides = a
+                die, mod = diemod.split('+')  # Addition Modifier
+                operator = '+'
+            except ValueError:
+                try:
+                    die, mod = diemod.split('-')  # Subtraction Modifier
+                    operator = '-'
+                except ValueError:
+                    try:
+                        die, mod = diemod.split('*')  # Multiplier Modifier
+                        operator = '*'
+                    except ValueError:
+                        try:
+                            die, mod = diemod.split('/')  # Division Modifier
+                            operator = '/'
+                        except ValueError:  # No Modifier
+                            operator = ''
+                            mod = ''
+                            if not any(symbol in msg for symbol in ['+', '-', '*', '/']):
+                                die = diemod
 
-        sides = int(sides)
-        rolls = int(rolls)
-        modifier = int(modifier)
-        rollBones()
+    else:  # The same thing as the if above, but sets count to 0 for strait math
+        count = '0'
+        try:
+            die, mod = msg.split('+')
+            operator = '+'
+        except ValueError:
+            try:
+                die, mod = msg.split('-')
+                operator = '-'
+            except ValueError:
+                try:
+                    die, mod = msg.split('*')
+                    operator = '*'
+                except ValueError:
+                    try:
+                        die, mod = msg.split('/')
+                        operator = '/'
+                    except ValueError:
+                        return 'Unknown Operator'
 
-    def rollBones():
-        global rolls, sides, modifier, msg, failures, successes
-        roll = 0  # Outcome of a roll
-        total = 0  # Total of all rolls combined, without modifier
-        modifier = int(modifier)
-        if modifier == 0:  # Cleans up equation when using modifiers
-            modsy = ''
-        elif modifier > 0:
-            modsy = '+' + str(modifier)
-        elif modifier < 0:
-            modsy = '-' + str(-1 * modifier)
+    if count is '':
+        count = 1
+    return count, die, mod, operator, adv
 
-        # print('Rolling ' + str(rolls) + 'd' + str(sides) + str(modsy))
-        trolls = rolls
 
-        r = []
+def organizer(count, die, mod, operator, roll, total, tmod):  # Formats the roll into a Discord readable string
+    operation = ''  # Empty variable to avoid Undefined Error
+    str(count)  # Converts all the relevant Integers to Strings
+    str(die)
+    str(mod)
+    str(roll)
+    str(total)
+    str(tmod)
+    selection = 'Rolling: {}d{}{}{}'.format(count, die, operator, mod)  # First Line of Response
+    rolling = '\n{}\nTotal: {}'.format(roll, total)  # Second and Third Line of Response
+    if operator is not '':  # Checks for an operator
+        operation = '\n{}{}{}= **{}**'.format(total, operator, mod, tmod)  # Fourth line of Response
+    return '{}{}{}'.format(selection, rolling, operation)  # Return the message in a readable format
 
-        while rolls > 0:
-            roll = random.randint(1, sides)
-            if roll == sides:
-                successes = successes + 1
-                r.append(roll)
-            elif roll == 1:
-                failures = failures + 1
-                r.append(roll)
-            else:
-                r.append(roll)
-            total = total + roll
-            rolls = rolls - 1
 
-        # print(r)
+def roller(selection):  # Returns the Roll or Error as a single string
+    count, die, mod, operator, adv = separator(msg=selection)  # When not rolling 'die' acts as another mod
+    count = int(count)  # Done separate to avoid an error on next line
+    if 'd' in selection and count > 0:  # Rolling Dice
+        total = 0  # Total of all rolls combined
+        tmod = 0  # Total with Modifier
+        rolls = []  # Empty list for append statement
+        counter = count  # Done this way to be able to avoid count being 0 in the return message
+        die = int(die)  # Sides on the die, converted to an integer
+        if mod is not '':  # Avoid an error when converting '' to an integer
+            mod = int(mod)
+        while counter > 0:  # Makes sure all dice get rolled
+            counter -= 1  # Subtracts from counter as to not go over intended count
+            roll = random.randint(1, die)  # Actually rolling the die, using the sides of the die as the maximum
+            rolls.append(roll)  # Adding the rolled number to the list
+            total += roll  # Adds the rolled number to the total
+        if operator is not '':  # Checks for an operator
+            if operator is '/' and int(mod) == 0:  # Checks to see if it is a Divide by Zero problem
+                return 'Error\nDivide by Zero'  # Returns an Error message
+            else:  # There is an operator and it is not a Divide by Zero Problem
+                operators = {  # Dictionary used to avoid an if then chain, by setting the operators to the key and
+                    '+': int(total) + int(mod),  # calculating in the dictionary itself
+                    '-': int(total) - int(mod),
+                    '*': int(total) * int(mod),
+                    '/': int(total) / int(mod)
+                }
+                tmod = operators.get(operator)  # Calls the dictionary above
+        else:
+            tmod = ''
+        if adv != 0:
+            if 'd' in selection and count >0:
+                adv_total = 0
+                adv_rolls = []
+                adv_counter = count
+                while counter > 0:
+                    adv_counter -= 1
+                    adv_roll = random.randint(1, die)
+                    adv_rolls.append(adv_roll)
+                    adv_total += adv_roll  # TODO Finish advantage Rolling
 
-        r = str(r)
+        return organizer(count=count, die=die, mod=mod, operator=operator, roll=rolls, total=total, tmod=tmod)
+    elif mod is not '':  # Only Math (If you look at lines 90-100 the notes would be the same
+        if operator is '/' and int(mod) == 0:
+            return 'Error:\nDivide by Zero'
+        else:
+            operators = {  # Since die is substituted for the first mod, it is used instead of total
+                '+': int(die) + int(mod),
+                '-': int(die) - int(mod),
+                '*': int(die) * int(mod),
+                '/': int(die) / int(mod)
+            }
+            result = operators.get(operator)
 
-        # print('Total Rolled: ' + str(total))
-        msg = 'Rolling ' + str(trolls) + 'd' + str(sides) + str(modsy) + '\n' + r + '\n' + 'Total Rolled: ' + str(total)
-
-        if modifier != 0:
-            mofi = ''
-            if modifier > 0:
-                mofi = str(total) + ' + ' + str(modifier)
-            elif modifier < 0:
-                mofi = str(total) + ' - ' + str(-1 * modifier)
-            # print('Modified Total: ' + str(total + modifier))
-            msg = msg + '\n' + mofi + '\n' + 'Modified Total: ' + str(total + modifier)
-
-        if successes != 0:
-            if successes == 1:
-                msg = msg + '\n' + '**Critical Success**'
-            else:
-                msg = msg + '\n' + '**' + str(successes) + ' Critical Successes' + '**'
-
-        if failures != 0:
-            if failures == 1:
-                msg = msg + '\n' + '**Critical Failure**'
-            else:
-                msg = msg + '\n' + '**' + str(failures) + ' Critical Failures' + '**'
-
-    check()
-    return msg
+            return 'Calculating:\n{} {} {} = {}'.format(str(die), operator, str(mod), str(result))  # Returns Result
+    else:
+        return 'An Unknown Error has Occurred'  # Catch all error message
